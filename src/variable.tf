@@ -30,12 +30,12 @@ variable "aws_region2" {
 
 variable "vpc_amount" {
   description = "Amount of VPCs per region"
-  default     = 2
+  default     = 3
 }
 
 variable "vpc_environment" {
   description = "type of VPCs"
-  default     = ["dev", "prod"]
+  default     = ["dev", "prod", "hybrid"]
 }
 
 variable "subnet_amount" {
@@ -51,4 +51,23 @@ variable "vpc_cidr1" {
 variable "vpc_cidr2" {
   description = "VPC Superblock"
   default     = "10.64.0.0/10"
+}
+
+##################################################
+# server
+##################################################
+
+variable "ami" {
+  description = "AMI image id"
+  default = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-minimal-kernel-default-arm64"
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  default     = "t4g.nano"
+}
+
+variable "key_name" {
+  description = "Key pair name for SSH access"
+  default     = "cloudwan-demo-key"
 }

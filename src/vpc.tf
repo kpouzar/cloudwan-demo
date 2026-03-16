@@ -18,6 +18,21 @@ resource "aws_vpc" "region1_vpc" {
 }
 
 ################################################################################
+# Internet Gateway
+################################################################################
+resource "aws_internet_gateway" "region1_igw" {
+  provider = aws.primary
+  count = var.vpc_amount
+
+  vpc_id = aws_vpc.region1_vpc[count.index].id
+
+  tags = {
+    Name = "test-igw-${count.index}"
+  }
+}
+
+
+################################################################################
 # Subnets 
 ################################################################################
 
@@ -52,15 +67,24 @@ resource "aws_subnet" "tgw_a_region1_subnet" {
 #############################################################################
 # Routing table create
 #############################################################################
-resource "aws_route_table" "private_region1_rt" {
+resource "aws_route_table" "server_region1_rt" {
   count = var.vpc_amount
   provider = aws.primary
 
   vpc_id = aws_vpc.region1_vpc[count.index].id
 
   tags = {
-    Name = "private-vpc${count.index}-rt"
+    Name = "server-vpc${count.index}-rt"
   }
+}
+
+resource "aws_route" "server_region1_route_to_igw" {
+  provider = aws.primary
+  count = var.vpc_amount
+  
+  route_table_id = aws_route_table.server_region1_rt[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = aws_internet_gateway.region1_igw[count.index].id
 }
 
 resource "aws_route_table" "tgw_region1_rt" {
@@ -82,7 +106,7 @@ resource "aws_route_table_association" "vpc_pub_a_region1_rt_assoc" {
   provider = aws.primary
 
   subnet_id      = aws_subnet.server_a_region1_subnet[count.index].id
-  route_table_id = aws_route_table.private_region1_rt[count.index].id
+  route_table_id = aws_route_table.server_region1_rt[count.index].id
 }
 
 resource "aws_route_table_association" "vpc_tgw_a_region1_rt_assoc" {
@@ -113,6 +137,20 @@ resource "aws_vpc" "region2_vpc" {
   tags = {
     Name = "test-vpc-${count.index}"
     Environment = element(var.vpc_environment, count.index)
+  }
+}
+
+################################################################################
+# Internet Gateway
+################################################################################
+resource "aws_internet_gateway" "region2_igw" {
+    provider = aws.secondary
+  count = var.vpc_amount
+
+  vpc_id = aws_vpc.region2_vpc[count.index].id
+
+  tags = {
+    Name = "test-igw-${count.index}"
   }
 }
 
@@ -151,16 +189,44 @@ resource "aws_subnet" "tgw_a_region2_subnet" {
 #############################################################################
 # Routing table create
 #############################################################################
-resource "aws_route_table" "private_region2_rt" {
+resource "aws_route_table" "server_region2_rt" {
   count = var.vpc_amount
   provider = aws.secondary
 
   vpc_id = aws_vpc.region2_vpc[count.index].id
 
   tags = {
-    Name = "private-vpc${count.index}-rt"
+    Name = "server-vpc${count.index}-rt"
   }
 }
+
+resource "aws_route" "server_region2_route_to_igw" {
+  count = var.vpc_amount
+  provider = aws.secondary
+  
+  route_table_id = aws_route_table.server_region2_rt[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = aws_internet_gateway.region2_igw[count.index].id
+}
+
+resource "aws_route" "server_region1_route_to_cw" {
+  count = var.vpc_amount
+  provider = aws.primary
+  
+  route_table_id = aws_route_table.server_region1_rt[count.index].id
+  destination_cidr_block = "10.0.0.0/8"
+  core_network_arn = aws_networkmanager_core_network.core_network.arn
+  }
+
+resource "aws_route" "server_region2_route_to_cw" {
+  count = var.vpc_amount
+  provider = aws.secondary
+  
+  route_table_id = aws_route_table.server_region2_rt[count.index].id
+  destination_cidr_block = "10.0.0.0/8"
+  core_network_arn = aws_networkmanager_core_network.core_network.arn
+}
+
 
 resource "aws_route_table" "tgw_region2_rt" {
   count = var.vpc_amount
@@ -181,7 +247,7 @@ resource "aws_route_table_association" "vpc_pub_a_region2_rt_assoc" {
   provider = aws.secondary
 
   subnet_id      = aws_subnet.server_a_region2_subnet[count.index].id
-  route_table_id = aws_route_table.private_region2_rt[count.index].id
+  route_table_id = aws_route_table.server_region2_rt[count.index].id
 }
 
 resource "aws_route_table_association" "vpc_tgw_a_region2_rt_assoc" {
