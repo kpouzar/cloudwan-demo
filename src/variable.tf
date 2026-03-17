@@ -30,12 +30,12 @@ variable "aws_region2" {
 
 variable "vpc_amount" {
   description = "Amount of VPCs per region"
-  default     = 3
+  default     = 6
 }
 
 variable "vpc_environment" {
   description = "type of VPCs"
-  default     = ["dev", "prod", "hybrid"]
+  default     = ["dev", "dev", "prod", "prod", "hybrid", "hybrid"]
 }
 
 variable "subnet_amount" {

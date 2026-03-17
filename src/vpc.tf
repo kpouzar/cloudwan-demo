@@ -117,143 +117,143 @@ resource "aws_route_table_association" "vpc_tgw_a_region1_rt_assoc" {
   route_table_id = aws_route_table.tgw_region1_rt[count.index].id
 }
 
-####################################################################################################################################
-# REGION 2
-####################################################################################################################################
+# ####################################################################################################################################
+# # REGION 2
+# ####################################################################################################################################
 
-################################################################################
-# VPC
-################################################################################
+# ################################################################################
+# # VPC
+# ################################################################################
 
-resource "aws_vpc" "region2_vpc" {
-  provider = aws.secondary
-  count = var.vpc_amount
+# resource "aws_vpc" "region2_vpc" {
+#   provider = aws.secondary
+#   count = var.vpc_amount
 
-  cidr_block           = cidrsubnet(var.vpc_cidr2, 6, count.index)
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+#   cidr_block           = cidrsubnet(var.vpc_cidr2, 6, count.index)
+#   enable_dns_hostnames = true
+#   enable_dns_support   = true
 
 
-  tags = {
-    Name = "test-vpc-${count.index}"
-    Environment = element(var.vpc_environment, count.index)
-  }
-}
+#   tags = {
+#     Name = "test-vpc-${count.index}"
+#     Environment = element(var.vpc_environment, count.index)
+#   }
+# }
 
-################################################################################
-# Internet Gateway
-################################################################################
-resource "aws_internet_gateway" "region2_igw" {
-    provider = aws.secondary
-  count = var.vpc_amount
+# ################################################################################
+# # Internet Gateway
+# ################################################################################
+# resource "aws_internet_gateway" "region2_igw" {
+#     provider = aws.secondary
+#   count = var.vpc_amount
 
-  vpc_id = aws_vpc.region2_vpc[count.index].id
+#   vpc_id = aws_vpc.region2_vpc[count.index].id
 
-  tags = {
-    Name = "test-igw-${count.index}"
-  }
-}
+#   tags = {
+#     Name = "test-igw-${count.index}"
+#   }
+# }
 
-################################################################################
-# Subnets 
-################################################################################
+# ################################################################################
+# # Subnets 
+# ################################################################################
 
-resource "aws_subnet" "server_a_region2_subnet" {
-  count = var.vpc_amount
-  provider = aws.secondary
+# resource "aws_subnet" "server_a_region2_subnet" {
+#   count = var.vpc_amount
+#   provider = aws.secondary
   
-  vpc_id            = aws_vpc.region2_vpc[count.index].id
-  cidr_block        = cidrsubnet(aws_vpc.region2_vpc[count.index].cidr_block, 8, 10)
-  availability_zone = "${var.aws_region2}a"
+#   vpc_id            = aws_vpc.region2_vpc[count.index].id
+#   cidr_block        = cidrsubnet(aws_vpc.region2_vpc[count.index].cidr_block, 8, 10)
+#   availability_zone = "${var.aws_region2}a"
 
-  tags = {
-    Name = "server-a-vpc${count.index}-subnet"
-  }
-}
+#   tags = {
+#     Name = "server-a-vpc${count.index}-subnet"
+#   }
+# }
 
-resource "aws_subnet" "tgw_a_region2_subnet" {
-  count = var.vpc_amount
-  provider = aws.secondary
+# resource "aws_subnet" "tgw_a_region2_subnet" {
+#   count = var.vpc_amount
+#   provider = aws.secondary
   
-  vpc_id            = aws_vpc.region2_vpc[count.index].id
-  cidr_block        = cidrsubnet(aws_vpc.region2_vpc[count.index].cidr_block, 8, 0)
-  availability_zone = "${var.aws_region2}a"
+#   vpc_id            = aws_vpc.region2_vpc[count.index].id
+#   cidr_block        = cidrsubnet(aws_vpc.region2_vpc[count.index].cidr_block, 8, 0)
+#   availability_zone = "${var.aws_region2}a"
 
-  tags = {
-    Name = "tgw-a-vpc${count.index}-subnet"
-  }
-}
+#   tags = {
+#     Name = "tgw-a-vpc${count.index}-subnet"
+#   }
+# }
 
 
 
-#############################################################################
-# Routing table create
-#############################################################################
-resource "aws_route_table" "server_region2_rt" {
-  count = var.vpc_amount
-  provider = aws.secondary
+# #############################################################################
+# # Routing table create
+# #############################################################################
+# resource "aws_route_table" "server_region2_rt" {
+#   count = var.vpc_amount
+#   provider = aws.secondary
 
-  vpc_id = aws_vpc.region2_vpc[count.index].id
+#   vpc_id = aws_vpc.region2_vpc[count.index].id
 
-  tags = {
-    Name = "server-vpc${count.index}-rt"
-  }
-}
+#   tags = {
+#     Name = "server-vpc${count.index}-rt"
+#   }
+# }
 
-resource "aws_route" "server_region2_route_to_igw" {
-  count = var.vpc_amount
-  provider = aws.secondary
+# resource "aws_route" "server_region2_route_to_igw" {
+#   count = var.vpc_amount
+#   provider = aws.secondary
   
-  route_table_id = aws_route_table.server_region2_rt[count.index].id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id = aws_internet_gateway.region2_igw[count.index].id
-}
+#   route_table_id = aws_route_table.server_region2_rt[count.index].id
+#   destination_cidr_block = "0.0.0.0/0"
+#   gateway_id = aws_internet_gateway.region2_igw[count.index].id
+# }
 
-resource "aws_route" "server_region1_route_to_cw" {
-  count = var.vpc_amount
-  provider = aws.primary
+# resource "aws_route" "server_region1_route_to_cw" {
+#   count = var.vpc_amount
+#   provider = aws.primary
   
-  route_table_id = aws_route_table.server_region1_rt[count.index].id
-  destination_cidr_block = "10.0.0.0/8"
-  core_network_arn = aws_networkmanager_core_network.core_network.arn
-  }
+#   route_table_id = aws_route_table.server_region1_rt[count.index].id
+#   destination_cidr_block = "10.0.0.0/8"
+#   core_network_arn = aws_networkmanager_core_network.core_network.arn
+#   }
 
-resource "aws_route" "server_region2_route_to_cw" {
-  count = var.vpc_amount
-  provider = aws.secondary
+# resource "aws_route" "server_region2_route_to_cw" {
+#   count = var.vpc_amount
+#   provider = aws.secondary
   
-  route_table_id = aws_route_table.server_region2_rt[count.index].id
-  destination_cidr_block = "10.0.0.0/8"
-  core_network_arn = aws_networkmanager_core_network.core_network.arn
-}
+#   route_table_id = aws_route_table.server_region2_rt[count.index].id
+#   destination_cidr_block = "10.0.0.0/8"
+#   core_network_arn = aws_networkmanager_core_network.core_network.arn
+# }
 
 
-resource "aws_route_table" "tgw_region2_rt" {
-  count = var.vpc_amount
-  provider = aws.secondary
+# resource "aws_route_table" "tgw_region2_rt" {
+#   count = var.vpc_amount
+#   provider = aws.secondary
 
-  vpc_id = aws_vpc.region2_vpc[count.index].id
+#   vpc_id = aws_vpc.region2_vpc[count.index].id
 
-  tags = {
-    Name = "tgw-vpc${count.index}-rt"
-  }
-}
+#   tags = {
+#     Name = "tgw-vpc${count.index}-rt"
+#   }
+# }
 
-####################################################################
-# Routing table association
-####################################################################
-resource "aws_route_table_association" "vpc_pub_a_region2_rt_assoc" {
-  count = var.vpc_amount
-  provider = aws.secondary
+# ####################################################################
+# # Routing table association
+# ####################################################################
+# resource "aws_route_table_association" "vpc_pub_a_region2_rt_assoc" {
+#   count = var.vpc_amount
+#   provider = aws.secondary
 
-  subnet_id      = aws_subnet.server_a_region2_subnet[count.index].id
-  route_table_id = aws_route_table.server_region2_rt[count.index].id
-}
+#   subnet_id      = aws_subnet.server_a_region2_subnet[count.index].id
+#   route_table_id = aws_route_table.server_region2_rt[count.index].id
+# }
 
-resource "aws_route_table_association" "vpc_tgw_a_region2_rt_assoc" {
-  count = var.vpc_amount
-  provider = aws.secondary
+# resource "aws_route_table_association" "vpc_tgw_a_region2_rt_assoc" {
+#   count = var.vpc_amount
+#   provider = aws.secondary
 
-  subnet_id      = aws_subnet.tgw_a_region2_subnet[count.index].id
-  route_table_id = aws_route_table.tgw_region2_rt[count.index].id
-}
+#   subnet_id      = aws_subnet.tgw_a_region2_subnet[count.index].id
+#   route_table_id = aws_route_table.tgw_region2_rt[count.index].id
+# }
