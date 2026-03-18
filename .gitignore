@@ -58,4 +58,4 @@ override.tf.json
 terraform.rc
 
 #state files config
-versions.tf
+#versions.tf
