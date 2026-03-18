@@ -72,7 +72,7 @@ resource "aws_security_group" "server_region1_sg" {
    provider = aws.primary
    count = var.vpc_amount
 
-   ami = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-minimal-kernel-default-arm64"
+   ami = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
    instance_type = var.instance_type
    key_name = var.key_name
    vpc_security_group_ids = [aws_security_group.server_region1_sg[count.index].id]

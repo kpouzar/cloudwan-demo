@@ -81,10 +81,10 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
       asn      = "65500"
     }
 
-    edge_locations {
-      location = var.aws_region2
-      asn      = "65501"
-    }
+    # edge_locations {
+    #   location = var.aws_region2
+    #   asn      = "65501"
+    # }
   }
 
   segments {
