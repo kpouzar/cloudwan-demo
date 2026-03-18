@@ -10,13 +10,13 @@ terraform {
       version = "6.36.0"
     }
   }
-  # backend "s3" {
-  #   bucket  = "terraform-state"
-  #   key     = "cloudwan-demo/terraform.tfstate"
-  #   region  = "eu-central-1"
-  #   use_lockfile = true
-  #   encrypt = false
-  # }
+  backend "s3" {
+    bucket  = "terraform-state-958315857631"
+    key     = "cloudwan-demo/terraform.tfstate"
+    region  = "eu-central-1"
+    use_lockfile = true
+    encrypt = false
+  }
 }
 
 provider "aws" {
