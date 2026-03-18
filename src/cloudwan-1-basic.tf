@@ -119,7 +119,13 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
 }
 
 resource "aws_networkmanager_core_network_policy_attachment" "cloudwan_better_policy_attachment" {
-  depends_on = [  ] 
+  depends_on = [ aws_networkmanager_vpc_attachment.vpc_region1_attachment[0],
+                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[1],
+                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[2],
+                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[3],
+                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[4],
+                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[5]                  
+     ] 
   core_network_id = aws_networkmanager_core_network.core_network.id
   policy_document = data.aws_networkmanager_core_network_policy_document.cloudwan_better_policy.json     
 }

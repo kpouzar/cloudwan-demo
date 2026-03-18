@@ -1,4 +1,41 @@
 
+####################################################################################################################################
+# IAM role
+####################################################################################################################################
+
+resource "aws_iam_role" "linux_ec2_role" {
+  name               = "linux-ec2-role"
+  description        = "Allows EC2 to access SSM"
+  assume_role_policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": ["ec2.amazonaws.com"]
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+ POLICY  
+}
+
+resource "aws_iam_role_policy_attachment" "linux_ec2_role_attachment" {
+  role       = aws_iam_role.linux_ec2_role.name
+  policy_arn ="arn:aws:iam::aws:policy/AmazonSSMManagedEC2InstanceDefaultPolicy"
+}
+
+resource "aws_iam_instance_profile" "linux_ec2_instance_profile" {
+  name = "linux-ec2-instance-profile"
+  role = aws_iam_role.linux_ec2_role.name
+}
+
+####################################################################################################################################
+# REGION 1
+####################################################################################################################################
 resource "aws_security_group" "server_region1_sg" {
   provider = aws.primary
   count = var.vpc_amount
@@ -40,7 +77,7 @@ resource "aws_security_group" "server_region1_sg" {
    key_name = var.key_name
    vpc_security_group_ids = [aws_security_group.server_region1_sg[count.index].id]
    subnet_id = aws_subnet.server_a_region1_subnet[count.index].id
-   iam_instance_profile = "AmazonSSMRoleForInstancesQuickSetup"
+   iam_instance_profile = aws_iam_instance_profile.linux_ec2_instance_profile.name
    private_ip = cidrhost(aws_subnet.server_a_region1_subnet[count.index].cidr_block, 10)
    associate_public_ip_address = true
 
@@ -98,7 +135,7 @@ resource "aws_security_group" "server_region1_sg" {
 #    key_name = var.key_name
 #    vpc_security_group_ids = [aws_security_group.server_region2_sg[count.index].id]
 #    subnet_id = aws_subnet.server_a_region2_subnet[count.index].id
-#    iam_instance_profile = "AmazonSSMRoleForInstancesQuickSetup"
+#    iam_instance_profile = aws_iam_instance_profile.linux_ec2_instance_profile.name
 #    private_ip = cidrhost(aws_subnet.server_a_region2_subnet[count.index].cidr_block, 10)
 #    associate_public_ip_address = true
    
