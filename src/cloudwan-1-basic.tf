@@ -42,7 +42,7 @@ resource "aws_networkmanager_core_network" "core_network" {
 
 resource "aws_networkmanager_vpc_attachment" "vpc_region1_attachment" {
   provider = aws.primary
-  count = var.vpc_amount
+  count = 4
 
   core_network_id = aws_networkmanager_core_network.core_network.id
   subnet_arns     = [aws_subnet.tgw_a_region1_subnet[count.index].arn]
@@ -74,7 +74,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   version = "2025.11"
 
   core_network_configuration {
-    asn_ranges = ["65022-65534"]
+    asn_ranges = ["65500-65534"]
 
     edge_locations {
       location = var.aws_region1
@@ -88,7 +88,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   }
 
   segments {
-    name = "dev"
+    name = "test"
     require_attachment_acceptance = false
   }
 
@@ -98,10 +98,23 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   }
 
   segments {
-    name = "hybrid"
+    name = "dc"
+    require_attachment_acceptance = false
+  }
+  segments {
+    name = "eg"
+    require_attachment_acceptance = false
+  }
+
+  network_function_groups {
+    name = "fw-test"
     require_attachment_acceptance = true
   }
- 
+  network_function_groups {
+    name = "fw-prod"
+    require_attachment_acceptance = true
+  }
+
   attachment_policies {
     rule_number = 100
     condition_logic = "and"
@@ -129,3 +142,4 @@ resource "aws_networkmanager_core_network_policy_attachment" "cloudwan_better_po
   core_network_id = aws_networkmanager_core_network.core_network.id
   policy_document = data.aws_networkmanager_core_network_policy_document.cloudwan_better_policy.json     
 }
+

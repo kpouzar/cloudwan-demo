@@ -88,7 +88,8 @@ resource "aws_route" "server_region1_route_to_igw" {
 }
 
 resource "aws_route" "server_region1_route_to_cw" {
-  count = var.vpc_amount
+  count = 4
+  #var.vpc_amount
   provider = aws.primary
   
   route_table_id = aws_route_table.server_region1_rt[count.index].id
