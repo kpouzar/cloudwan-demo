@@ -24,7 +24,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_base_policy" {
   }
 
   segments {
-    name = "dev"
+    name = "test"
   }
 
  }
@@ -75,6 +75,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
 
   core_network_configuration {
     asn_ranges = ["65500-65534"]
+    inside_cidr_blocks = [ "10.254.0.0/24" ]
 
     edge_locations {
       location = var.aws_region1
@@ -90,29 +91,33 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   segments {
     name = "test"
     require_attachment_acceptance = false
+    isolate_attachments = true
   }
 
   segments {
     name = "prod"
     require_attachment_acceptance = false
+    isolate_attachments = true
   }
 
   segments {
     name = "dc"
     require_attachment_acceptance = false
+    isolate_attachments = false
   }
   segments {
     name = "eg"
     require_attachment_acceptance = false
+    isolate_attachments = false
   }
 
   network_function_groups {
-    name = "fw-test"
-    require_attachment_acceptance = true
+    name = "fwtest"
+    require_attachment_acceptance = false
   }
   network_function_groups {
-    name = "fw-prod"
-    require_attachment_acceptance = true
+    name = "fwprod"
+    require_attachment_acceptance = false
   }
 
   attachment_policies {
@@ -127,6 +132,21 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
       association_method = "tag"
       tag_value_of_key = "Environment"
       
+    }
+  }
+
+  segment_actions {
+    action = "send-to"
+    segment = "test"
+    via {
+    network_function_groups = [ "fwtest" ]
+    }
+  }
+  segment_actions {
+    action = "send-to"
+    segment = "prod"
+    via {
+    network_function_groups = [ "fwprod" ]
     }
   }
 }
