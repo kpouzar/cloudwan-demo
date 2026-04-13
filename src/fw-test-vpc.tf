@@ -333,14 +333,14 @@ resource "aws_route" "tgw_gwlb_fw_test_route" {
   network_interface_id = aws_instance.cisco_fw_test_instance_1.primary_network_interface_id
 }
 
-# resource "aws_route" "server_fw_test_route" {
-#   provider = aws.primary
+resource "aws_route" "server_fw_test_route" {
+  provider = aws.primary
   
-#   route_table_id = aws_route_table.server_fw_test_rt
-#   destination_cidr_block = "0.0.0.0/0"
-#   core_network_arn = aws_networkmanager_core_network.core_network.arn
+  route_table_id = aws_route_table.server_fw_test_rt.id
+  destination_cidr_block = "10.0.0.0/8"
+  core_network_arn = aws_networkmanager_core_network.core_network.arn
  
-# }
+}
 
 
 ####################################################################################################################################
@@ -383,20 +383,36 @@ resource "aws_security_group" "server_fw_test_sg" {
    associate_public_ip_address = false
    source_dest_check = false
 
-   user_data = <<-EOF
+user_data = <<-EOF
+Content-Type: multipart/mixed; boundary="===============CISCO=="
+MIME-Version: 1.0
+
+--===============CISCO==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="iosxe_config.txt"
+
 hostname fw-test-1
-# license smart enable
-username lab password lab
+username cisco privilege 15 secret Password123
+aaa new-model
+aaa authentication login default local
+aaa authorization exec default local
 ip domain-name csast.cz
-crypto key generate rsa modulus 1024
-interface GigabitEthernet1
-ip address dhcp
-no shut
-exit
-ip route 0.0.0.0 0.0.0.0 ${cidrhost(aws_subnet.server_fw_test_subnet_a.cidr_block, 1)}
+crypto key generate rsa general-keys modulus 4096
+ip ssh version 2
+ip ssh server  authenticate user keyboard
+line con 0
+ login authentication default
 line vty 0 4
- login local
-exit 
+ transport input ssh
+ login authentication default
+interface GigabitEthernet1
+ ip address dhcp
+ no shut
+ip route 0.0.0.0 0.0.0.0 ${cidrhost(aws_subnet.server_fw_prod_subnet_a.cidr_block, 1)}
+
+--===============CISCO==--
 EOF
 
   tags = {

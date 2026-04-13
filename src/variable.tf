@@ -35,7 +35,12 @@ variable "vpc_amount" {
 
 variable "vpc_environment" {
   description = "type of VPCs"
-  default     = ["dev", "dev", "prod", "prod", "hybrid", "hybrid"]
+  default     = ["test", "test", "prod", "prod", "hybrid", "hybrid"]
+}
+
+variable "attachment_policy_label" {
+  description = "attachement CWAN label for routing policies"
+  default     = ["label-test-request", "label-test-request", "label-prod-request", "label-prod-request"]
 }
 
 variable "subnet_amount" {

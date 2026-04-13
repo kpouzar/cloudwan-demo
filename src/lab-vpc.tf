@@ -87,15 +87,15 @@ resource "aws_route" "server_region1_route_to_igw" {
   gateway_id = aws_internet_gateway.region1_igw[count.index].id
 }
 
-# resource "aws_route" "server_region1_route_to_cw" {
-#   count = 4
-#   #var.vpc_amount
-#   provider = aws.primary
+resource "aws_route" "server_region1_route_to_cw" {
+  count = 4
+  #var.vpc_amount
+  provider = aws.primary
   
-#   route_table_id = aws_route_table.server_region1_rt[count.index].id
-#   destination_cidr_block = "10.0.0.0/8"
-#   core_network_arn = aws_networkmanager_core_network.core_network.arn
-#   }
+  route_table_id = aws_route_table.server_region1_rt[count.index].id
+  destination_cidr_block = "10.0.0.0/8"
+  core_network_arn = aws_networkmanager_core_network.core_network.arn
+  }
 
 resource "aws_route_table" "tgw_region1_rt" {
   count = var.vpc_amount

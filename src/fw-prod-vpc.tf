@@ -5,7 +5,7 @@
 resource "aws_vpc" "fw_prod_vpc" {
   provider = aws.primary
   
-  cidr_block           = "10.254.0.0/16"
+  cidr_block           = "10.253.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
 
@@ -386,16 +386,20 @@ resource "aws_security_group" "server_fw_prod_sg" {
    user_data = <<-EOF
 hostname fw-prod-1
 # license smart enable
-username lab password lab
+aaa new-model
+username lab privilege 15 secret lab
+aaa authentication login default local
+line con 0
+ login authentication default
+line vty 0 4
+ login authentication default
 ip domain-name csast.cz
 crypto key generate rsa modulus 1024
 interface GigabitEthernet1
-ip address dhcp
-no shut
-exit
+ ip address dhcp
+ no shut
+ exit
 ip route 0.0.0.0 0.0.0.0 ${cidrhost(aws_subnet.server_fw_prod_subnet_a.cidr_block, 1)}
-line vty 0 4
- login local
 exit 
 EOF
 

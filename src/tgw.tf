@@ -23,6 +23,14 @@ resource "aws_ec2_transit_gateway_route_table" "eg_tgw_rt" {
     }
 }
 
+resource "aws_ec2_transit_gateway_route_table" "dc_tgw_rt" {
+    provider = aws.primary
+    transit_gateway_id = aws_ec2_transit_gateway.eg_tgw.id
+    tags = {
+        Name = "dc-tgw-rt"
+    }
+}
+
 # resource "aws_ec2_transit_gateway_route" "eg_tgw_rt_route_1" {
 #     provider = aws.primary
 #     destination_cidr_block = "1.0.0.0/8"

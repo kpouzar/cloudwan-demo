@@ -10,7 +10,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_base_policy" {
   version = "2025.11"
 
   core_network_configuration {
-    asn_ranges = ["65022-65534"]
+    asn_ranges = ["65500-65510"]
 
     edge_locations {
       location = var.aws_region1
@@ -54,6 +54,15 @@ resource "aws_networkmanager_vpc_attachment" "vpc_region1_attachment" {
   }
 }
 
+resource "aws_networkmanager_attachment_routing_policy_label" "vpc_region1_attachment_label" {
+  provider = aws.primary
+  count = 4
+
+  core_network_id      = aws_networkmanager_core_network.core_network.id
+  attachment_id        = aws_networkmanager_vpc_attachment.vpc_region1_attachment[count.index].id
+  routing_policy_label = "${var.attachment_policy_label[count.index]}"
+}
+
 
 # resource "aws_networkmanager_vpc_attachment" "vpc_region2_attachment" {
 #   provider = aws.secondary
@@ -74,8 +83,8 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   version = "2025.11"
 
   core_network_configuration {
-    asn_ranges = ["65500-65534"]
-    inside_cidr_blocks = [ "10.254.0.0/24" ]
+    asn_ranges = ["65500-65510"]
+    inside_cidr_blocks = [ "10.250.0.0/24" ]
 
     edge_locations {
       location = var.aws_region1
@@ -149,17 +158,76 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
     network_function_groups = [ "fwprod" ]
     }
   }
-}
+
+  routing_policies {
+    routing_policy_name = "labelTestRp"
+    routing_policy_description = "label traffic from test segment with a tag"
+    routing_policy_number = 10
+    routing_policy_direction = "inbound"
+
+    routing_policy_rules {
+      rule_number = 10
+      rule_definition {
+         action {
+           type = "add-community"
+           value = "65500:100" 
+        }
+      }
+    }
+  }
+
+  routing_policies {
+    routing_policy_name = "labelProdRp"
+    routing_policy_description = "label traffic from prod segment with a tag"
+    routing_policy_number = 11
+    routing_policy_direction = "inbound"
+
+    routing_policy_rules {
+      rule_number = 10
+      rule_definition {
+         action {
+           type = "add-community"
+           value = "65500:200" 
+        }
+      }
+    }
+  }
+
+  attachment_routing_policy_rules {
+    rule_number = 100
+    description = "label connected routes test"
+    conditions {
+      type = "routing-policy-label"
+      value = "label-test-request"
+    }
+    action {
+      associate_routing_policies = [ "labelTestRp" ]
+    }
+  }
+
+  attachment_routing_policy_rules {
+    rule_number = 200
+    description = "label connected routes prod"
+    conditions {
+      type = "routing-policy-label"
+      value = "label-prod-request"
+    }
+    action {
+      associate_routing_policies = [ "labelProdRp" ]
+    }
+  }
+}  
+
 
 resource "aws_networkmanager_core_network_policy_attachment" "cloudwan_better_policy_attachment" {
   depends_on = [ aws_networkmanager_vpc_attachment.vpc_region1_attachment[0],
                   aws_networkmanager_vpc_attachment.vpc_region1_attachment[1],
                   aws_networkmanager_vpc_attachment.vpc_region1_attachment[2],
-                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[3],
-                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[4],
-                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[5]                  
+                  aws_networkmanager_vpc_attachment.vpc_region1_attachment[3],            
      ] 
   core_network_id = aws_networkmanager_core_network.core_network.id
   policy_document = data.aws_networkmanager_core_network_policy_document.cloudwan_better_policy.json     
+  
 }
 
+# TODO  VPC attachemewnt FW 
