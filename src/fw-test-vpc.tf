@@ -335,7 +335,8 @@ resource "aws_route" "tgw_gwlb_fw_test_route" {
 
 resource "aws_route" "server_fw_test_route" {
   provider = aws.primary
-  
+  depends_on = [ aws_networkmanager_core_network_policy_attachment.cloudwan_better_policy_attachment]
+
   route_table_id = aws_route_table.server_fw_test_rt.id
   destination_cidr_block = "10.0.0.0/8"
   core_network_arn = aws_networkmanager_core_network.core_network.arn
@@ -384,35 +385,26 @@ resource "aws_security_group" "server_fw_test_sg" {
    source_dest_check = false
 
 user_data = <<-EOF
-Content-Type: multipart/mixed; boundary="===============CISCO=="
-MIME-Version: 1.0
-
---===============CISCO==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="iosxe_config.txt"
-
+Section: IOS configuration 
 hostname fw-test-1
-username cisco privilege 15 secret Password123
 aaa new-model
+username cisco privilege 15 secret cisco
 aaa authentication login default local
 aaa authorization exec default local
-ip domain-name csast.cz
+ip domain name csast.cz
 crypto key generate rsa general-keys modulus 4096
 ip ssh version 2
-ip ssh server  authenticate user keyboard
+ip ssh server algorithm authentication password keyboard
 line con 0
- login authentication default
+login authentication default
 line vty 0 4
- transport input ssh
- login authentication default
+transport input ssh
+login authentication default
 interface GigabitEthernet1
- ip address dhcp
- no shut
-ip route 0.0.0.0 0.0.0.0 ${cidrhost(aws_subnet.server_fw_prod_subnet_a.cidr_block, 1)}
-
---===============CISCO==--
+ip address dhcp
+no shut
+ip route 0.0.0.0 0.0.0.0 10.0.10.1
+end
 EOF
 
   tags = {

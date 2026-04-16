@@ -40,7 +40,7 @@ variable "vpc_environment" {
 
 variable "attachment_policy_label" {
   description = "attachement CWAN label for routing policies"
-  default     = ["label-test-request", "label-test-request", "label-prod-request", "label-prod-request"]
+  default     = ["labelTestRequest", "labelTestRequest", "labelProdRequest", "labelProdRequest"]
 }
 
 variable "subnet_amount" {

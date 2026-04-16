@@ -11,7 +11,12 @@ terraform {
     }
   }
   backend "s3" {
-    bucket  = "terraform-state-958315857631"
+    # csas HUB
+  #  bucket  = "terraform-state-958315857631"
+    # csas SPOKE
+#    bucket  = "terraform-state-899946341776"
+    # erste HUB
+    bucket  = "terraform-state-794285266353"
     key     = "cloudwan-demo/terraform.tfstate"
     region  = "eu-central-1"
     use_lockfile = true

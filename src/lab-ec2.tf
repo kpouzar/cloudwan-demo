@@ -107,78 +107,70 @@ EOF
  }
 
 
-####################################################################################################################################
-# Cisco Cat 8000v
-####################################################################################################################################
+# ####################################################################################################################################
+# # Cisco Cat 8000v
+# ####################################################################################################################################
 
-resource "aws_security_group" "server_fw_test_test_sg" {
-  provider = aws.primary
+# resource "aws_security_group" "server_dc_test_sg" {
+#   provider = aws.primary
   
-  name        = "allow-any"
-  description = "Allow anything"
-  vpc_id      = aws_vpc.region1_vpc[0].id
+#   name        = "allow-any"
+#   description = "Allow anything"
+#   vpc_id      = aws_vpc.region1_vpc[5].id
 
-# Allow all inbound traffic for testing purposes
-  ingress {
-    description = "All traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
+# # Allow all inbound traffic for testing purposes
+#   ingress {
+#     description = "All traffic"
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
+# }
 
- resource "aws_instance" "cisco_fw_test_instance_test" {
-   provider = aws.primary
+#  resource "aws_instance" "cisco_dc_test_instance" {
+#    provider = aws.primary
    
-   ami = "ami-011a3f02bf1fbe77a"
-   instance_type = "t3.medium"
-   key_name = var.key_name
-   vpc_security_group_ids = [aws_security_group.server_fw_test_test_sg.id]
-   subnet_id = aws_subnet.server_a_region1_subnet[0].id
-   iam_instance_profile = aws_iam_instance_profile.linux_ec2_instance_profile.name
-   private_ip = cidrhost(aws_subnet.server_a_region1_subnet[0].cidr_block, 11)
-   associate_public_ip_address = true
-   source_dest_check = false
-user_data = <<-EOF
-Content-Type: multipart/mixed; boundary="===============cisco=="
-MIME-Version: 1.0
+#    ami = "ami-011a3f02bf1fbe77a"
+#    instance_type = "t3.medium"
+#    key_name = var.key_name
+#    vpc_security_group_ids = [aws_security_group.server_dc_test_sg.id]
+#    subnet_id = aws_subnet.server_a_region1_subnet[5].id
+#    iam_instance_profile = aws_iam_instance_profile.linux_ec2_instance_profile.name
+#    private_ip = cidrhost(aws_subnet.server_a_region1_subnet[5].cidr_block, 11)
+#    associate_public_ip_address = true
+#    source_dest_check = false
+# user_data = <<-EOF
+# Section: IOS configuration 
+# hostname fw-test-1
+# aaa new-model
+# username cisco privilege 15 secret cisco
+# aaa authentication login default local
+# aaa authorization exec default local
+# ip domain name csast.cz
+# crypto key generate rsa general-keys modulus 4096
+# ip ssh version 2
+# ip ssh server algorithm authentication password keyboard
+# line con 0
+# login authentication default
+# line vty 0 4
+# transport input ssh
+# login authentication default
+# interface GigabitEthernet1
+# ip address dhcp
+# no shut
+# ip route 0.0.0.0 0.0.0.0 10.0.10.1
+# end
 
---===============cisco==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="iosxe_config.txt"
-hostname fw-test-1
-aaa new-model
-username cisco privilege 15 secret cisco
-aaa authentication login default local
-aaa authorization exec default local
-ip domain name csast.cz
-crypto key generate rsa general-keys modulus 4096
-ip ssh version 2
-ip ssh server algorithm authentication password keyboard
-line con 0
- login authentication default
-line vty 0 4
- transport input ssh
- login authentication default
-interface GigabitEthernet1
- ip address dhcp
- no shut
-ip route 0.0.0.0 0.0.0.0 10.0.10.1
-end
+# EOF
 
---===============cisco==--
-EOF
-
-  tags = {
-       Name = "cisco-fw-test-instance-test"
-   }
- }
+#   tags = {
+#        Name = "cisco-dc-test-instance"
+#        }
+#  }
