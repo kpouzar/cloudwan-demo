@@ -34,10 +34,14 @@ resource "aws_networkmanager_core_network" "core_network" {
   provider = aws.primary
   
   global_network_id = aws_networkmanager_global_network.global_network.id
-  description       = "Core Network for CloudWAN demo"
+  description       = "Core Network for CloudWAN lab"
 
   base_policy_document = data.aws_networkmanager_core_network_policy_document.cloudwan_base_policy.json
   create_base_policy   = true
+
+  tags = {
+    Name = "cloudwan-core-network"
+  }
 }
 
 ########################################################################################################################
@@ -72,7 +76,7 @@ resource "aws_networkmanager_vpc_attachment" "fw_prod_attachment" {
   provider = aws.primary
 
   core_network_id = aws_networkmanager_core_network.core_network.id
-  subnet_arns     = [aws_subnet.tgw_fw_prod_subnet_a.arn, aws_subnet.tgw_fw_prod_subnet_b.arn, aws_subnet.tgw_fw_prod_subnet_c.arn]
+  subnet_arns     = [aws_subnet.cw_fw_prod_subnet_a.arn, aws_subnet.cw_fw_prod_subnet_b.arn, aws_subnet.cw_fw_prod_subnet_c.arn]
   vpc_arn         = aws_vpc.fw_prod_vpc.arn
   
   tags = {
@@ -85,7 +89,7 @@ resource "aws_networkmanager_vpc_attachment" "fw_test_attachment" {
   provider = aws.primary
 
   core_network_id = aws_networkmanager_core_network.core_network.id
-  subnet_arns     = [aws_subnet.tgw_fw_test_subnet_a.arn, aws_subnet.tgw_fw_test_subnet_b.arn, aws_subnet.tgw_fw_test_subnet_c.arn]
+  subnet_arns     = [aws_subnet.cw_fw_test_subnet_a.arn, aws_subnet.cw_fw_test_subnet_b.arn, aws_subnet.cw_fw_test_subnet_c.arn]
   vpc_arn         = aws_vpc.fw_test_vpc.arn
   
   tags = {
@@ -94,48 +98,93 @@ resource "aws_networkmanager_vpc_attachment" "fw_test_attachment" {
   }
 }
 
-resource "aws_networkmanager_vpc_attachment" "uplink_attachment" {
+resource "aws_networkmanager_vpc_attachment" "vpc_rtr_test_attachment" {
   provider = aws.primary
 
   core_network_id = aws_networkmanager_core_network.core_network.id
-  subnet_arns     = [aws_subnet.tgw_uplink_subnet_a.arn, aws_subnet.tgw_uplink_subnet_b.arn, aws_subnet.tgw_uplink_subnet_c.arn]
-  vpc_arn         = aws_vpc.uplink_vpc.arn
+  subnet_arns     = [aws_subnet.cw_rtr_test_subnet_a.arn, aws_subnet.cw_rtr_test_subnet_b.arn, aws_subnet.cw_rtr_test_subnet_c.arn]
+  vpc_arn         = aws_vpc.rtr_test_vpc.arn
   
   tags = {
-    Name = "vpc-uplink-attachment"
-    Environment = "dxc"
+    Name = "vpc-rtr-test-attachment"
+    Environment = "rtrtest"
   }
 }
 
-resource "aws_networkmanager_connect_attachment" "cisco_uplink_attachment" {
+resource "aws_networkmanager_connect_attachment" "cisco_rtr_test_connect_attachment" {
   provider = aws.primary
 
   core_network_id = aws_networkmanager_core_network.core_network.id
-  transport_attachment_id = aws_networkmanager_vpc_attachment.uplink_attachment.id
+  transport_attachment_id = aws_networkmanager_vpc_attachment.vpc_rtr_test_attachment.id
   edge_location = var.aws_region1
   options {
     protocol = "NO_ENCAP"
   }
   tags = {
-    Name = "connect-uplink-attachment"
-    Environment = "dxc"
+    Name = "connect-rtr-test-vpc-attachment"
+    Environment = "rtrtest"
   }
 }
 
-resource "aws_networkmanager_connect_peer" "cisco_uplink_test_peer_1" {
+resource "aws_networkmanager_connect_peer" "cisco_rtr_test_peer_1" {
   provider = aws.primary
   
-  subnet_arn = aws_subnet.server_uplink_subnet_a.arn
-  connect_attachment_id = aws_networkmanager_connect_attachment.cisco_uplink_attachment.id
-  peer_address = aws_instance.cisco_uplink_instance_1.private_ip
+  subnet_arn = aws_subnet.cw_rtr_test_subnet_a.arn
+  connect_attachment_id = aws_networkmanager_connect_attachment.cisco_rtr_test_connect_attachment.id
+  peer_address = aws_network_interface.cisco_dxc_1_g3_int.private_ip
 
   bgp_options {
     peer_asn = 65530
   }
   
   tags = {
-    Name = "cisco-uplink-test-peer-1"
-    Environment = "dxc"
+    Name = "cisco-1-rtr-test-peer"
+    Environment = "rtrtest"
+  }
+}
+
+resource "aws_networkmanager_vpc_attachment" "vpc_rtr_prod_attachment" {
+  provider = aws.primary
+
+  core_network_id = aws_networkmanager_core_network.core_network.id
+  subnet_arns     = [aws_subnet.cw_rtr_prod_subnet_a.arn, aws_subnet.cw_rtr_prod_subnet_b.arn, aws_subnet.cw_rtr_prod_subnet_c.arn]
+  vpc_arn         = aws_vpc.rtr_prod_vpc.arn
+  
+  tags = {
+    Name = "vpc-rtr-prod-attachment"
+    Environment = "rtrprod"
+  }
+}
+
+resource "aws_networkmanager_connect_attachment" "cisco_rtr_prod_connect_attachment" {
+  provider = aws.primary
+
+  core_network_id = aws_networkmanager_core_network.core_network.id
+  transport_attachment_id = aws_networkmanager_vpc_attachment.vpc_rtr_prod_attachment.id
+  edge_location = var.aws_region1
+  options {
+    protocol = "NO_ENCAP"
+  }
+  tags = {
+    Name = "connect-rtr-prod-vpc-attachment"
+    Environment = "rtrprod"
+  }
+}
+
+resource "aws_networkmanager_connect_peer" "cisco_rtr_prod_peer_1" {
+  provider = aws.primary
+  
+  subnet_arn = aws_subnet.cw_rtr_prod_subnet_a.arn
+  connect_attachment_id = aws_networkmanager_connect_attachment.cisco_rtr_prod_connect_attachment.id
+  peer_address = aws_network_interface.cisco_dxc_1_g4_int.private_ip
+
+  bgp_options {
+    peer_asn = 65530
+  }
+  
+  tags = {
+    Name = "cisco-1-rtr-prod-peer"
+    Environment = "rtrprod"
   }
 }
 
@@ -159,6 +208,7 @@ resource "aws_networkmanager_transit_gateway_route_table_attachment" "eg_prod_rt
   
   tags = {
     Name = "tgw-eg-prod-rt-attachment"
+    Environment = "rtrprod"
   }
 }
 
@@ -231,12 +281,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
     require_attachment_acceptance = false
     isolate_attachments = false
   }
-  segments {
-    name = "dxc"
-    require_attachment_acceptance = false
-    isolate_attachments = false
-  }
-  
+
   network_function_groups {
     name = "fwtest"
     require_attachment_acceptance = false
@@ -272,7 +317,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   segment_actions {
     action = "send-via"
     segment = "test"
-    mode = "single-hop"
+    mode = "dual-hop"
     via {
       network_function_groups = [ "fwtest" ]
     }
@@ -281,7 +326,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   segment_actions {
     action = "send-via"
     segment = "prod"
-    mode = "single-hop"
+    mode = "dual-hop"
     via {
       network_function_groups = [ "fwprod" ]
     }
@@ -290,7 +335,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   segment_actions {
     action = "send-via"
     segment = "test"
-    mode = "single-hop"
+    mode = "dual-hop"
     when_sent_to {
      segments = ["rtrtest"]
     }
@@ -302,7 +347,7 @@ data "aws_networkmanager_core_network_policy_document" "cloudwan_better_policy" 
   segment_actions {
     action = "send-via"
     segment = "prod"
-    mode = "single-hop"
+    mode = "dual-hop"
     when_sent_to {
      segments = ["rtrprod"]
     }

@@ -74,5 +74,5 @@ variable "instance_type" {
 
 variable "key_name" {
   description = "Key pair name for SSH access"
-  default     = "cloudwan-demo-key"
+  default     = "cloudwan-lab-eg-hub-key"
 }

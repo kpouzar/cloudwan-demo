@@ -31,7 +31,7 @@ resource "aws_internet_gateway" "fw_prod_igw" {
 ################################################################################
 # Subnets 
 ################################################################################
-resource "aws_subnet" "tgw_fw_prod_subnet_a" {
+resource "aws_subnet" "cw_fw_prod_subnet_a" {
   provider = aws.primary
   
   vpc_id            = aws_vpc.fw_prod_vpc.id
@@ -39,11 +39,11 @@ resource "aws_subnet" "tgw_fw_prod_subnet_a" {
   availability_zone = "${var.aws_region1}a"
 
   tags = {
-    Name = "tgw-fw-prod-subnet-a"
+    Name = "cw-fw-prod-subnet-a"
   }
 }
 
-resource "aws_subnet" "tgw_fw_prod_subnet_b" {
+resource "aws_subnet" "cw_fw_prod_subnet_b" {
   provider = aws.primary
   
   vpc_id            = aws_vpc.fw_prod_vpc.id
@@ -51,11 +51,11 @@ resource "aws_subnet" "tgw_fw_prod_subnet_b" {
   availability_zone = "${var.aws_region1}b"
 
   tags = {
-    Name = "tgw-fw-prod-subnet-b"
+    Name = "cw-fw-prod-subnet-b"
   }
 }
 
-resource "aws_subnet" "tgw_fw_prod_subnet_c" {
+resource "aws_subnet" "cw_fw_prod_subnet_c" {
   provider = aws.primary
   
   vpc_id            = aws_vpc.fw_prod_vpc.id
@@ -63,7 +63,7 @@ resource "aws_subnet" "tgw_fw_prod_subnet_c" {
   availability_zone = "${var.aws_region1}c"
 
   tags = {
-    Name = "tgw-fw-prod-subnet-c"
+    Name = "cw-fw-prod-subnet-c"
   }
 }
 
@@ -214,13 +214,13 @@ resource "aws_route_table" "public_fw_prod_rt" {
   }
 }
 
-resource "aws_route_table" "tgw_fw_prod_rt" {
+resource "aws_route_table" "cw_fw_prod_rt" {
   provider = aws.primary
 
   vpc_id = aws_vpc.fw_prod_vpc.id
 
   tags = {
-    Name = "tgw-fw-prod-rt"
+    Name = "cw-fw-prod-rt"
   }
 }
 
@@ -248,25 +248,25 @@ resource "aws_route_table_association" "server_fw_prod_rt_assoc_c" {
   route_table_id = aws_route_table.server_fw_prod_rt.id
 }
 
-resource "aws_route_table_association" "tgw_fw_prod_rt_assoc_a" {
+resource "aws_route_table_association" "cw_fw_prod_rt_assoc_a" {
   provider = aws.primary
 
-  subnet_id      = aws_subnet.tgw_fw_prod_subnet_a.id
-  route_table_id = aws_route_table.tgw_fw_prod_rt.id
+  subnet_id      = aws_subnet.cw_fw_prod_subnet_a.id
+  route_table_id = aws_route_table.cw_fw_prod_rt.id
 }
 
-resource "aws_route_table_association" "tgw_fw_prod_rt_assoc_b" {
+resource "aws_route_table_association" "cw_fw_prod_rt_assoc_b" {
   provider = aws.primary
 
-  subnet_id      = aws_subnet.tgw_fw_prod_subnet_b.id
-  route_table_id = aws_route_table.tgw_fw_prod_rt.id
+  subnet_id      = aws_subnet.cw_fw_prod_subnet_b.id
+  route_table_id = aws_route_table.cw_fw_prod_rt.id
 }
 
-resource "aws_route_table_association" "tgw_fw_prod_rt_assoc_c" {
+resource "aws_route_table_association" "cw_fw_prod_rt_assoc_c" {
   provider = aws.primary
 
-  subnet_id      = aws_subnet.tgw_fw_prod_subnet_c.id
-  route_table_id = aws_route_table.tgw_fw_prod_rt.id
+  subnet_id      = aws_subnet.cw_fw_prod_subnet_c.id
+  route_table_id = aws_route_table.cw_fw_prod_rt.id
 }
 
 resource "aws_route_table_association" "gwlbe_fw_prod_rt_assoc_a" {
@@ -324,10 +324,10 @@ resource "aws_route" "public_igw_fw_prod_route" {
   gateway_id = aws_internet_gateway.fw_prod_igw.id
 }
 
-resource "aws_route" "tgw_gwlb_fw_prod_route" {
+resource "aws_route" "cw_gwlb_fw_prod_route" {
   provider = aws.primary
   
-  route_table_id = aws_route_table.tgw_fw_prod_rt.id
+  route_table_id = aws_route_table.cw_fw_prod_rt.id
   destination_cidr_block = "0.0.0.0/0"
   #vpc_endpoint_id = "value"
   network_interface_id = aws_instance.cisco_fw_prod_instance_1.primary_network_interface_id
